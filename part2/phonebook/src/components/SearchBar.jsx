@@ -5,3 +5,5 @@ const SearchBar = ({ searchName, handleSearchChange }) => {
     </>
   );
 };
+
+export default SearchBar;
