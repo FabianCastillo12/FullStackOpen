@@ -6,7 +6,7 @@ const AddNewPerson = ({
   addPerson,
 }) => {
   return (
-    <>
+    <div className="addPerson">
       <form onSubmit={addPerson}>
         <div>
           name: <input value={newName} onChange={handleNameChange} />
@@ -18,7 +18,7 @@ const AddNewPerson = ({
           <button type="submit">add</button>
         </div>
       </form>
-    </>
+    </div>
   );
 };
 

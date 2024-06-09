@@ -1,9 +1,11 @@
 const Person = ({ person, onDelete }) => {
     return (
-      <>
-        {person.name} {person.number} <button onClick={() => {onDelete(person.id)}}>delete</button>
+      <div className="person">
+        <span>{person.name}</span>
+        <span>{person.number}</span>
+        <button onClick={() => {onDelete(person.id)}}>delete</button>
         <br />
-      </>
+      </div>
     )
   }
 
