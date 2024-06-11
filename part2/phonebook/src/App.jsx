@@ -5,13 +5,15 @@ import AddNewPerson from "./components/AddNewPerson.jsx";
 import SearchBar from "./components/SearchBar.jsx";
 import personsService from "./services/persons.js";
 import { v4 as uuidv4 } from "uuid";
+import Notification from "./components/Notification.jsx";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [searchName, setSearchName] = useState("");
-  const [errorMessage, setErrorMessage] = useState('some error happened...')
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [errorType, setErrorType] = useState(null);
 
   const hook = () => {
     console.log("effect");
@@ -75,12 +77,23 @@ const App = () => {
     if (existingPerson) {
       if (window.confirm(`${newName} is already added to phonebook. Do you want to update the number?`)) {
         const updatedPerson = { ...existingPerson, number: newNumber };
-        personsService.updateNumber(existingPerson.id, updatedPerson).then((returnedPerson) => {
-          setPersons(persons.map(person => person.id !== existingPerson.id ? person : returnedPerson));
-          setNewName("");
-          setNewNumber("");
-          console.log(persons);
-        });
+        personsService
+          .updateNumber(existingPerson.id, updatedPerson).then((returnedPerson) => {
+            setPersons(persons.map(person => person.id !== existingPerson.id ? person : returnedPerson));
+            setErrorType("success")
+            setErrorMessage(`Updated ${newName}'s number`);
+            setTimeout(() => {
+              setErrorMessage(null)
+            }, 5000)
+            setNewName("");
+            setNewNumber("");
+          }).catch((error) => {
+            setErrorType("error")
+            setErrorMessage(`Information of ${newName} has already been removed from server`);
+            setTimeout(() => {
+              setErrorMessage(null)
+            }, 5000)
+          })
         return;
       }
     }
@@ -96,7 +109,7 @@ const App = () => {
   return (
     <div className="container">
       <h1>Phonebook</h1>
-      <Notification message={errorMessage} />
+      <Notification message={errorMessage} errorType={errorType}/>
       <SearchBar
         searchName={searchName}
         handleSearchChange={handleSearchChange}
