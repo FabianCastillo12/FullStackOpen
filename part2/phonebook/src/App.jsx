@@ -1,22 +1,26 @@
 import { useState, useEffect } from "react";
+import './App.css';
 import Persons from "./components/Persons.jsx";
 import AddNewPerson from "./components/AddNewPerson.jsx";
 import SearchBar from "./components/SearchBar.jsx";
 import personsService from "./services/persons.js";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
+import Notification from "./components/Notification.jsx";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [searchName, setSearchName] = useState("");
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [errorType, setErrorType] = useState(null);
 
   const hook = () => {
     console.log("effect");
     personsService.getPersons().then((savedPersons) => {
       setPersons(savedPersons);
     });
-    console.log("render", persons.length, "notes");
+    console.log("render", persons.length, "persons");
   };
 
   useEffect(hook, []);
@@ -41,29 +45,27 @@ const App = () => {
       personsService.deletePerson(id).then(() => {
         setPersons(persons.filter((person) => person.id !== id));
       });
-    console.log(persons)
+      console.log(persons);
     }
-  }
+  };
 
   const personsToShow = persons.filter((person) =>
     person.name.toLowerCase().includes(searchName.toLowerCase())
   );
 
-
-
   const addPerson = (event) => {
     event.preventDefault();
     console.log("button clicked", event.target);
 
-    let newId = uuidv4(); 
-    while (persons.some(person => person.id === newId)) {
+    let newId = uuidv4();
+    while (persons.some((person) => person.id === newId)) {
       newId = uuidv4();
     }
 
     const personObject = {
       name: newName,
       id: newId,
-      number: newNumber
+      number: newNumber,
     };
 
     if (newName === "" || newNumber === "") {
@@ -71,13 +73,29 @@ const App = () => {
       return;
     }
 
-    if (persons.find((person) => person.name === newName)) {
-      window.alert(`${newName} is already added to phonebook`);
-      return;
-    }
-    if (persons.find((person) => person.number === newNumber)) {
-      window.alert(`${newNumber} is already added to phonebook`);
-      return;
+    const existingPerson = persons.find((person) => person.name === newName);
+    if (existingPerson) {
+      if (window.confirm(`${newName} is already added to phonebook. Do you want to update the number?`)) {
+        const updatedPerson = { ...existingPerson, number: newNumber };
+        personsService
+          .updateNumber(existingPerson.id, updatedPerson).then((returnedPerson) => {
+            setPersons(persons.map(person => person.id !== existingPerson.id ? person : returnedPerson));
+            setErrorType("success")
+            setErrorMessage(`Updated ${newName}'s number`);
+            setTimeout(() => {
+              setErrorMessage(null)
+            }, 5000)
+            setNewName("");
+            setNewNumber("");
+          }).catch((error) => {
+            setErrorType("error")
+            setErrorMessage(`Information of ${newName} has already been removed from server`);
+            setTimeout(() => {
+              setErrorMessage(null)
+            }, 5000)
+          })
+        return;
+      }
     }
 
     personsService.createPerson(personObject).then((returnedPerson) => {
@@ -89,8 +107,9 @@ const App = () => {
   };
 
   return (
-    <div>
-      <h2>Phonebook</h2>
+    <div className="container">
+      <h1>Phonebook</h1>
+      <Notification message={errorMessage} errorType={errorType}/>
       <SearchBar
         searchName={searchName}
         handleSearchChange={handleSearchChange}
@@ -104,7 +123,7 @@ const App = () => {
         addPerson={addPerson}
       />
       <h2>Numbers</h2>
-      <Persons persons={personsToShow} onDelete={handleDeletePerson}/>
+      <Persons persons={personsToShow} onDelete={handleDeletePerson} />
     </div>
   );
 };

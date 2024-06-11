@@ -3,10 +3,11 @@ import Person from './Person.jsx'
 const Persons = ({ persons, onDelete }) => {
     return (
       <>
-        {persons.map(person =>{
-          return <Person key={person.id} person={person} onDelete={onDelete}/>
-        })}
+        {persons.map(person =>
+          <Person key={person.id} person={person} onDelete={onDelete}/>
+        )}
       </>
+        
     )
   }
 
