@@ -20,7 +20,7 @@ const App = () => {
     personsService.getPersons().then((savedPersons) => {
       setPersons(savedPersons);
     });
-    console.log("render", persons.length, "notes");
+    console.log("render", persons.length, "persons");
   };
 
   useEffect(hook, []);
